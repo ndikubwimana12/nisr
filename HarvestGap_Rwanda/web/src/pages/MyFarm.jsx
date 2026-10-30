@@ -5,6 +5,7 @@ import HarvestWizard, { CONCERNS } from "../components/HarvestWizard";
 import { Rich } from "../components/AskBox";
 import { useData } from "../data";
 import { cropText, fmt, pct } from "../format";
+import { useLanguage } from "../language";
 import { BarList, Card, Note, PageHero, Pill, Section } from "../components/ui";
 
 const FARM_PRACTICES = [
@@ -37,6 +38,7 @@ function RangeBar({ local, national, place }) {
 
 export default function MyFarm() {
   const D = useData();
+  const { isRw } = useLanguage();
   const [params, setParams] = useSearchParams();
   const { farm, setFarm } = useFarm();
   const navigate = useNavigate();
@@ -44,8 +46,8 @@ export default function MyFarm() {
   if (!params.get("district") || !params.get("crop")) {
     return (
       <>
-        <PageHero compact eyebrow="Estimate my harvest" challenge="Agricultural productivity" title="How much will my field produce?"
-          intro="Answer five quick questions. We'll compare your field with similar farms in the 2024 survey and write you a short report." />
+        <PageHero compact eyebrow={isRw ? "Teganya umusaruro wanjye" : "Estimate my harvest"} challenge="Agricultural productivity" title={isRw ? "Umurima wanjye uzatanga umusaruro ungana ute?" : "How much will my field produce?"}
+          intro={isRw ? "Subiza ibibazo bitanu bigufi. Turagereranya umurima wawe n'indi mirima imeze nkawo yabajijwe mu bushakashatsi bwa 2024." : "Answer five quick questions. We'll compare your field with similar farms in the 2024 survey and write you a short report."} />
         <div className="wrap relative z-10 -mt-16 pb-16">
           <HarvestWizard initial={farm} onDone={(a) => {
             setFarm({ district: a.district, crop: a.crop });
@@ -59,6 +61,7 @@ export default function MyFarm() {
 }
 
 function Report({ D, params, setParams, setFarm, navigate }) {
+  const { isRw } = useLanguage();
   const district = D.districtNames.includes(params.get("district")) ? params.get("district") : "Musanze";
   const crop = D.farmCrops.includes(params.get("crop")) ? params.get("crop") : "Maize";
   const area = Math.max(0.01, parseFloat(params.get("area")) || 0.5);
@@ -130,22 +133,27 @@ function Report({ D, params, setParams, setFarm, navigate }) {
       store: `**Storing and selling:** only ${pct(info.extension_post_harvest_rate)} of households in ${district} got advice on storing their harvest this season.`,
     })[c] || null),
   ].filter(Boolean);
+  const summaryRw = [
+    `Mu bushakashatsi bwa 2024, imirima ihinga ${crop} muri ${district} yejeje hafi ${fmt(src.median)} kg kuri hegitari. Ku buso bwawe bwa ${area} ha, ibi bingana na ${fmt(src.median * area)} kg.`,
+    local ? `Ibi ni ${pct(diff, true)} ugereranyije n'umusaruro wo hagati mu Rwanda. Umusaruro ushobora guhinduka bitewe n'imvura, ubutaka n'uburyo bwo guhinga.` : `Iyi mibare ni iy'u Rwanda hose kuko imirima ya ${crop} yabajijwe muri ${district} itari ihagije. Umusaruro ushobora guhinduka bitewe n'imvura n'uburyo bwo guhinga.`,
+    scenario ? `Mu ishusho y'inyongeramusaruro y'ubushakashatsi, ${scenario.inputs} ishobora kujyana n'umusaruro wa ${fmt(scenario.withInputs)} kg/ha (${pct(scenario.gain, true)}). Si isezerano; baza umujyanama w'ubuhinzi ku nama ikwiriye umurima wawe.` : `Koresha imbuto nziza zikwiranye n'akarere, kurikirana ubuzima bw'ibihingwa kandi ubaze umujyanama w'ubuhinzi ku gihe cyo gutera n'ifumbire.`,
+  ];
   const followUps = [`Water for crops in ${district}`, `Is fertilizer worth it for ${cropText(crop)}?`, `Where is ${cropText(crop)} harvest highest?`];
 
   return (
     <>
-      <PageHero compact eyebrow="Your harvest report" challenge="Agricultural productivity" title={`${crop} in ${district}`}
-        intro={`What the 2024 survey found on farms like yours, and what could help you harvest more.`} />
+      <PageHero compact eyebrow={isRw ? "Raporo y'umusaruro wawe" : "Your harvest report"} challenge="Agricultural productivity" title={`${crop} in ${district}`}
+        intro={isRw ? "Ibyo ubushakashatsi bwa 2024 bwabonye ku mirima imeze nk'uwawe n'ibyagufasha kongera umusaruro." : `What the 2024 survey found on farms like yours, and what could help you harvest more.`} />
 
       <div className="wrap relative z-10 -mt-16 mb-6">
         <div className="card border-l-4 border-l-nisr-blue p-6 sm:p-7">
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <h2 className="text-xl">Here's what we found</h2>
+            <h2 className="text-xl">{isRw ? "Dore ibyo twabonye" : "Here's what we found"}</h2>
             <button onClick={() => navigate("/my-farm")} className="inline-flex items-center gap-2 rounded-xl border border-nisr-line px-3.5 py-2 text-sm font-semibold text-nisr-blue hover:bg-nisr-mist">
-              <Pencil size={15} /> Change my answers
+              <Pencil size={15} /> {isRw ? "Hindura ibisubizo" : "Change my answers"}
             </button>
           </div>
-          <div className="mt-3 grid gap-2.5 text-[17px] leading-relaxed">{summary.map((s) => <p key={s}><Rich text={s} /></p>)}</div>
+          <div className="mt-3 grid gap-2.5 text-[17px] leading-relaxed">{(isRw ? summaryRw : summary).map((s) => <p key={s}><Rich text={s} /></p>)}</div>
           <div className="mt-5 flex flex-wrap gap-2">
             <span className="self-center text-sm font-semibold text-nisr-navy">Ask next:</span>
             {followUps.map((q) => (

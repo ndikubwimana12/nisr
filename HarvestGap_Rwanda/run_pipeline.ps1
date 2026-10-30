@@ -6,4 +6,6 @@ python analysis/02_build_features.py
 if ($LASTEXITCODE -ne 0) { throw 'Feature engineering failed.' }
 python analysis/03_train_models.py
 if ($LASTEXITCODE -ne 0) { throw 'Model training failed.' }
+python analysis/04_export_web_data.py
+if ($LASTEXITCODE -ne 0) { throw 'Website data export failed.' }
 Write-Host 'Pipeline complete. Review reports/model_training_report.md and data/public/.'

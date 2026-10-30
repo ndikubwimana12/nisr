@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { DataProvider } from "./data";
 import { FarmProvider } from "./farm";
+import { LanguageProvider } from "./language";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -11,7 +12,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <BrowserRouter>
       <DataProvider>
         <FarmProvider>
-          <App />
+          <LanguageProvider>
+            <App />
+          </LanguageProvider>
         </FarmProvider>
       </DataProvider>
     </BrowserRouter>

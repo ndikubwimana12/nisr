@@ -2,7 +2,7 @@
 
 Run from the HarvestGap_Rwanda folder:  python analysis/04_export_web_data.py
 Reads only data/public/ (survey-weighted aggregates, groups of 30+ plots) and writes
-web/public/data/harvestgap.json. No household-level data is included.
+web/public/data/agrilens.json, the data file loaded by the React app. No household-level data is included.
 """
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC = ROOT / "data" / "public"
-OUT = ROOT / "web" / "public" / "data" / "harvestgap.json"
+OUT = ROOT / "web" / "public" / "data" / "agrilens.json"
 
 # Survey facts reported by the AHS 2024 pipeline.
 SURVEY = {"households": 3724, "districts": 30, "cropRecords": 74549, "validYields": 59161, "year": 2024}

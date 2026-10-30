@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Loader2, Search } from "lucide-react";
 import { useData } from "../data";
+import { useLanguage } from "../language";
 
 const PRACTICES = [
   ["improved_seed", "Improved (certified) seed"],
@@ -21,6 +22,7 @@ const choice = (on) => `rounded-xl border px-4 py-3 text-left text-[16px] transi
 /** Five short questions, one per screen, then a short "working on it" moment. */
 export default function HarvestWizard({ initial = {}, onDone }) {
   const D = useData();
+  const { isRw } = useLanguage();
   const [step, setStep] = useState(0);
   const [a, setA] = useState({ district: initial.district || "", crop: initial.crop || "", area: "0.5", uses: [], concerns: ["harvest"] });
   const [search, setSearch] = useState("");
@@ -31,13 +33,13 @@ export default function HarvestWizard({ initial = {}, onDone }) {
 
   const steps = [
     {
-      q: "Where is your farm?", hint: "Choose your district.", ok: !!a.district,
+      q: isRw ? "Umurima wawe uherereye he?" : "Where is your farm?", hint: isRw ? "Hitamo akarere." : "Choose your district.", ok: !!a.district,
       body: (
         <>
           <label className="relative mb-4 block">
-            <span className="sr-only">Search districts</span>
+            <span className="sr-only">{isRw ? "Shaka akarere" : "Search districts"}</span>
             <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-nisr-muted" />
-            <input className="field pl-10" placeholder="Type to search…" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <input className="field pl-10" placeholder={isRw ? "Andika kugira ngo ushake…" : "Type to search…"} value={search} onChange={(e) => setSearch(e.target.value)} />
           </label>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
             {D.districtNames.filter((d) => d.toLowerCase().includes(search.trim().toLowerCase())).map((d) => (
@@ -48,7 +50,7 @@ export default function HarvestWizard({ initial = {}, onDone }) {
       ),
     },
     {
-      q: "What do you grow?", hint: "Choose the crop you want a report for.", ok: !!a.crop,
+      q: isRw ? "Uhinga iki?" : "What do you grow?", hint: isRw ? "Hitamo igihingwa ushaka kumenya umusaruro wacyo." : "Choose the crop you want a report for.", ok: !!a.crop,
       body: (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
           {D.farmCrops.map((c) => (
@@ -58,28 +60,28 @@ export default function HarvestWizard({ initial = {}, onDone }) {
       ),
     },
     {
-      q: "How big is the field?", hint: "Pick a size or type it in hectares. 1 hectare = 100 m × 100 m.", ok: parseFloat(a.area) > 0,
+      q: isRw ? "Umurima ungana ute?" : "How big is the field?", hint: isRw ? "Hitamo ingano cyangwa wandike ubuso muri hegitari. Hegitari 1 = 100 m × 100 m." : "Pick a size or type it in hectares. 1 hectare = 100 m × 100 m.", ok: parseFloat(a.area) > 0,
       body: (
         <>
           <div className="grid gap-2 sm:grid-cols-3">
-            {SIZES.map(([v, l]) => <button key={v} className={choice(a.area === v)} onClick={() => set({ area: v })}>{l}</button>)}
+            {SIZES.map(([v, l], i) => <button key={v} className={choice(a.area === v)} onClick={() => set({ area: v })}>{isRw ? ["Butoya cyane (0.1 ha)", "Butoya (0.25 ha)", "Kimwe cya kabiri cya hegitari", "Hegitari imwe", "Hegitari ebyiri"][i] : l}</button>)}
           </div>
           <label className="mt-4 block max-w-xs">
-            <span className="label">Or type the size (hectares)</span>
+            <span className="label">{isRw ? "Cyangwa wandike ubuso (hegitari)" : "Or type the size (hectares)"}</span>
             <input className="field" type="number" min="0.01" max="100" step="0.05" inputMode="decimal" value={a.area} onChange={(e) => set({ area: e.target.value })} />
           </label>
         </>
       ),
     },
     {
-      q: "What do you already use?", hint: "Tap all that apply, or none.", ok: true,
+      q: isRw ? "Ni ibihe usanzwe ukoresha?" : "What do you already use?", hint: isRw ? "Hitamo ibyo ukoresha byose, cyangwa ntuhitemo." : "Tap all that apply, or none.", ok: true,
       body: (
         <div className="grid gap-2 sm:grid-cols-2">
           {PRACTICES.map(([p, l]) => {
             const on = a.uses.includes(p);
             return (
               <button key={p} aria-pressed={on} className={`${choice(on)} flex items-center gap-3`} onClick={() => set({ uses: on ? a.uses.filter((x) => x !== p) : [...a.uses, p] })}>
-                <span className={`flex h-5 w-5 items-center justify-center rounded border ${on ? "border-nisr-blue bg-nisr-blue text-white" : "border-[#b9c8da]"}`}>{on && <Check size={14} />}</span>{l}
+                <span className={`flex h-5 w-5 items-center justify-center rounded border ${on ? "border-nisr-blue bg-nisr-blue text-white" : "border-[#b9c8da]"}`}>{on && <Check size={14} />}</span>{isRw ? { improved_seed: "Imbuto z’indobanure", inorganic_fertilizer: "Ifumbire mvaruganda (NPK, DAP, urea)", organic_fertilizer: "Ifumbire y'imborera", pesticide: "Imiti yica udukoko cyangwa indwara" }[p] : l}
               </button>
             );
           })}
@@ -87,7 +89,7 @@ export default function HarvestWizard({ initial = {}, onDone }) {
       ),
     },
     {
-      q: "What worries you most?", hint: "Choose all that apply. Your report will start with these.", ok: a.concerns.length > 0,
+      q: isRw ? "Ni iki kiguhangayikishije cyane?" : "What worries you most?", hint: isRw ? "Hitamo byose bikureba. Raporo izaheraho." : "Choose all that apply. Your report will start with these.", ok: a.concerns.length > 0,
       body: (
         <div className="grid gap-2 sm:grid-cols-2">
           {CONCERNS.map(([v, l]) => {
@@ -95,7 +97,7 @@ export default function HarvestWizard({ initial = {}, onDone }) {
             return (
               <button key={v} aria-pressed={on} className={`${choice(on)} flex items-center gap-3`}
                 onClick={() => set({ concerns: on ? a.concerns.filter((x) => x !== v) : [...a.concerns, v] })}>
-                <span className={`flex h-5 w-5 items-center justify-center rounded border ${on ? "border-nisr-blue bg-nisr-blue text-white" : "border-[#b9c8da]"}`}>{on && <Check size={14} />}</span>{l}
+                <span className={`flex h-5 w-5 items-center justify-center rounded border ${on ? "border-nisr-blue bg-nisr-blue text-white" : "border-[#b9c8da]"}`}>{on && <Check size={14} />}</span>{isRw ? { harvest: "Umusaruro muke", water: "Amazi adahagije", soil: "Ubutaka bunaniwe", store: "Kubika cyangwa kugurisha umusaruro" }[v] : l}
               </button>
             );
           })}
@@ -129,7 +131,12 @@ export default function HarvestWizard({ initial = {}, onDone }) {
           {lines.map((l, i) => (
             <li key={l} className={`flex items-center gap-3 transition-opacity ${i <= working ? "opacity-100" : "opacity-30"}`}>
               {i < working ? <Check size={18} className="text-[#1d7a46]" /> : <Loader2 size={18} className={i === working ? "animate-spin text-nisr-blue" : "text-nisr-muted"} />}
-              {l}
+              {isRw ? [
+                local ? `Turashaka imirima imeze nk'uwawe: ${local.n} y'ibihingwa bya ${a.crop} muri ${a.district}` : `Turashaka imirima y'igihingwa cya ${a.crop} mu Rwanda`,
+                "Tugereranya n'umusaruro wo mu Rwanda",
+                "Tureba ibyo abahinzi bejeje cyane bakora",
+                "Turandika raporo yawe",
+              ][i] : l}
             </li>
           ))}
         </ul>
@@ -142,7 +149,7 @@ export default function HarvestWizard({ initial = {}, onDone }) {
   return (
     <div className="card mx-auto max-w-3xl p-6 sm:p-8">
       <div className="flex items-center justify-between text-sm text-nisr-muted">
-        <span>Step {step + 1} of {steps.length}</span>
+        <span>{isRw ? `Intambwe ${step + 1} muri ${steps.length}` : `Step ${step + 1} of ${steps.length}`}</span>
         <span>{[a.district, a.crop].filter(Boolean).join(" · ")}</span>
       </div>
       <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#e6edf5]" aria-hidden="true">
@@ -153,10 +160,10 @@ export default function HarvestWizard({ initial = {}, onDone }) {
       {s.body}
       <div className="mt-8 flex items-center justify-between gap-3">
         <button className={`inline-flex items-center gap-2 rounded-xl px-4 py-3 font-semibold text-nisr-navy hover:bg-nisr-mist ${step === 0 ? "invisible" : ""}`} onClick={() => setStep(step - 1)}>
-          <ArrowLeft size={18} /> Back
+          <ArrowLeft size={18} /> {isRw ? "Subira inyuma" : "Back"}
         </button>
         <button className="btn-primary disabled:cursor-not-allowed disabled:opacity-40" disabled={!s.ok} onClick={() => (last ? finish() : setStep(step + 1))}>
-          {last ? "Create my report" : "Next"} <ArrowRight size={18} />
+          {last ? (isRw ? "Kora raporo yanjye" : "Create my report") : (isRw ? "Komeza" : "Next")} <ArrowRight size={18} />
         </button>
       </div>
     </div>

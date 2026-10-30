@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Check, Loader2, MessageCircle, Send } from "lucide-react";
 import { useData } from "../data";
 import { useFarm } from "../farm";
+import { COPY, useLanguage } from "../language";
 import { AREAS, answer, completeQuestion, parseQuestion, SUGGESTIONS } from "../advisor";
 
 /** Renders text where **double asterisks** mark the important numbers. */
@@ -98,6 +99,8 @@ function AskBack({ pending, onPick }) {
 const AskBox = forwardRef(function AskBox({ initialQuestion }, inputRef) {
   const D = useData();
   const { farm, setFarm } = useFarm();
+  const { language } = useLanguage();
+  const copy = COPY[language];
   const [text, setText] = useState("");
   const [thread, setThread] = useState([]);
   const endRef = useRef(null);
@@ -131,9 +134,9 @@ const AskBox = forwardRef(function AskBox({ initialQuestion }, inputRef) {
         <MessageCircle className="shrink-0 text-nisr-blue" size={22} aria-hidden="true" />
         <label htmlFor="ask-input" className="sr-only">Ask a question about farming in Rwanda</label>
         <input id="ask-input" ref={inputRef} value={text} onChange={(e) => setText(e.target.value)} autoComplete="off"
-          placeholder={farm.district ? `e.g. How can I grow more ${(farm.crop || "maize").toLowerCase()} in ${farm.district}?` : "e.g. How can I grow more maize in Musanze?"}
+          placeholder={language === "rw" ? copy.askPrompt : farm.district ? `e.g. How can I grow more ${(farm.crop || "maize").toLowerCase()} in ${farm.district}?` : "e.g. How can I grow more maize in Musanze?"}
           className="min-w-0 flex-1 bg-transparent py-3 text-[17px] text-nisr-ink placeholder:text-nisr-muted focus:outline-none" />
-        <button type="submit" className="btn-primary px-4 py-3" aria-label="Ask"><Send size={18} /><span className="hidden sm:inline">Ask</span></button>
+        <button type="submit" className="btn-primary px-4 py-3" aria-label={language === "rw" ? "Baza" : "Ask"}><Send size={18} /><span className="hidden sm:inline">{language === "rw" ? "Baza" : "Ask"}</span></button>
       </form>
       {thread.length === 0 && (
         <div className="flex flex-wrap gap-2">

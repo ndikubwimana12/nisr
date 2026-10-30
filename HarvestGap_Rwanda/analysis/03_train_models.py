@@ -21,7 +21,9 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path: sys.path.insert(0, str(ROOT))
-RAW = ROOT / "data" / "raw"; PROC = ROOT / "data" / "processed"
+MICRODATA = ROOT / "data" / "Microdata"
+RAW = MICRODATA if MICRODATA.exists() else ROOT / "data" / "raw"
+PROC = ROOT / "data" / "processed"
 MODELS = ROOT / "models"; PUBLIC = ROOT / "data" / "public"; REPORTS = ROOT / "reports"
 for p in (MODELS,PUBLIC,REPORTS): p.mkdir(parents=True, exist_ok=True)
 
@@ -206,6 +208,9 @@ def main():
     def read_stata_by_pattern(pattern):
         files=list(RAW.glob(pattern))
         if not files: return None
+        cleaned=PROC/f"{files[0].stem}.csv.gz"
+        if cleaned.exists():
+            return pd.read_csv(cleaned,low_memory=False)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             return pd.read_stata(files[0],convert_categoricals=False)

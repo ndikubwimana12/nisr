@@ -4,8 +4,8 @@ Run from project root: python analysis/01_audit_and_clean.py
 
 Important: this script does not guess the meaning of survey codes or convert
 all missing values to zero. It preserves original variables, trims strings,
-normalizes common blank/missing tokens, removes exact duplicate rows from the
-cleaned copy, and records a schema/missingness report. Survey-specific
+normalizes common blank/missing tokens, flags exact duplicate rows for review,
+and records a schema/missingness report. Survey-specific
 recoding must be guided by the official questionnaire/data dictionary.
 """
 from __future__ import annotations
@@ -19,7 +19,8 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-RAW = ROOT / "data" / "raw"
+MICRODATA = ROOT / "data" / "Microdata"
+RAW = MICRODATA if MICRODATA.exists() else ROOT / "data" / "raw"
 OUT = ROOT / "data" / "processed"
 PUBLIC = ROOT / "data" / "public"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -86,13 +87,13 @@ def main() -> None:
         out_path = OUT / f"{path.stem}.csv.gz"
         cleaned.to_csv(out_path, index=False, compression="gzip")
         report["source_file"] = path.name
-        report["cleaned_file"] = str(out_path.relative_to(ROOT))
+        report["cleaned_file"] = out_path.relative_to(ROOT).as_posix()
         report["source_shape"] = list(original_shape)
         details[path.name] = report
         inventory.append({
             "source_file": path.name, "rows": int(original_shape[0]),
             "columns": int(original_shape[1]), "cleaned_rows": int(len(cleaned)),
-            "cleaned_file": str(out_path.relative_to(ROOT)),
+            "cleaned_file": out_path.relative_to(ROOT).as_posix(),
             "duplicate_rows_flagged_not_removed": report["exact_duplicate_rows_flagged_not_removed"],
             "missing_percent_cells": report["missing_percent_cells"],
         })

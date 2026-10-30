@@ -11,20 +11,27 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
-RAW = ROOT / "data" / "raw"
 OUT = ROOT / "data" / "processed"
+MICRODATA = ROOT / "data" / "Microdata"
+RAW = MICRODATA if MICRODATA.exists() else ROOT / "data" / "raw"
 PUBLIC = ROOT / "data" / "public"
 OUT.mkdir(parents=True, exist_ok=True); PUBLIC.mkdir(parents=True, exist_ok=True)
 
 def main():
     candidates = list(RAW.glob("*Section3_4*.dta"))
     if not candidates:
-        raise FileNotFoundError("Cannot find Section3_4 crop production/input dataset in data/raw")
+        raise FileNotFoundError(f"Cannot find Section3_4 crop production/input dataset in {RAW.relative_to(ROOT)}")
     source = candidates[0]
     print(f"Reading {source.name} ...", flush=True)
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        df = pd.read_stata(source, convert_categoricals=False)
+    cleaned_source = OUT / f"{source.stem}.csv.gz"
+    if cleaned_source.exists():
+        df = pd.read_csv(cleaned_source, low_memory=False)
+        print(f"Using cleaned dataset {cleaned_source.name}", flush=True)
+    else:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            df = pd.read_stata(source, convert_categoricals=False)
+        print("Cleaned copy not found; using raw Stata data. Run 01_audit_and_clean.py first for the full workflow.", flush=True)
     # Each slot corresponds to one crop reported for the plot.
     slots = []
     for slot in range(1, 8):

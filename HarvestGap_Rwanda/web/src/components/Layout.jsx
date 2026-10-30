@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import { BarChart3, ChevronDown, Compass, Droplets, Globe2, Home, Info, Landmark, MapPin, MapPinned, MessageCircle, Package, Pencil, Sprout, Wheat, X } from "lucide-react";
+import { BarChart3, ChevronDown, Compass, Droplets, Globe2, Home, Info, Landmark, Languages, MapPin, MapPinned, MessageCircle, Package, Pencil, Sprout, Wheat, X } from "lucide-react";
 import { useFarm } from "../farm";
+import { useLanguage } from "../language";
+import AssistantWidget from "./AssistantWidget";
 import logoUrl from "../assets/agrilens-logo.png";
 
 /** Plain-language entries; each also names the Track 1 challenge area it covers. */
@@ -64,6 +66,7 @@ function InfoPanel({ onClose }) {
 }
 
 function Header({ panelOpen, setPanelOpen }) {
+  const { language, setLanguage } = useLanguage();
   const panelRef = useRef(null);
   useEffect(() => {
     if (!panelOpen) return undefined;
@@ -80,14 +83,17 @@ function Header({ panelOpen, setPanelOpen }) {
       <div className="wrap flex h-[70px] items-center gap-4">
         <Link to="/" aria-label="AgriLens home" className="shrink-0"><Logo className="h-9 sm:h-11" /></Link>
         <nav className="ml-6 hidden items-center gap-1 lg:flex" aria-label="Main">
-          <NavLink to="/" end className={link}><MessageCircle size={18} /> Ask a question</NavLink>
-          <NavLink to="/my-farm" className={link}><Wheat size={18} /> Estimate my harvest</NavLink>
+          <NavLink to="/" end className={link}><MessageCircle size={18} /> {language === "rw" ? "Baza ikibazo" : "Ask a question"}</NavLink>
+          <NavLink to="/my-farm" className={link}><Wheat size={18} /> {language === "rw" ? "Teganya umusaruro" : "Estimate my harvest"}</NavLink>
           <button data-info-toggle aria-expanded={panelOpen} onClick={() => setPanelOpen(!panelOpen)}
             className={`flex items-center gap-2 rounded-full px-4 py-2 text-[15px] font-semibold ${panelOpen ? "bg-nisr-mist text-nisr-blue" : "text-nisr-navy hover:bg-nisr-mist"}`}>
-            <Compass size={18} /> Find information <ChevronDown size={16} className={`transition-transform ${panelOpen ? "rotate-180" : ""}`} />
+            <Compass size={18} /> {language === "rw" ? "Shaka amakuru" : "Find information"} <ChevronDown size={16} className={`transition-transform ${panelOpen ? "rotate-180" : ""}`} />
           </button>
         </nav>
-        <div className="ml-auto min-w-0"><FarmChip /></div>
+        <div className="ml-auto flex min-w-0 items-center gap-2">
+          <button className="language-switch" onClick={() => setLanguage(language === "en" ? "rw" : "en")} aria-label={language === "en" ? "Switch to Kinyarwanda" : "Switch to English"}><Languages size={16} /><span>{language === "en" ? "EN" : "RW"}</span><span className="language-other">{language === "en" ? "Kinyarwanda" : "English"}</span></button>
+          <FarmChip />
+        </div>
       </div>
       {panelOpen && (
         <div ref={panelRef} className="absolute inset-x-0 top-[70px] hidden border-b border-nisr-line bg-white shadow-card lg:block">
@@ -100,12 +106,13 @@ function Header({ panelOpen, setPanelOpen }) {
 
 /** App-style bar on phones. */
 function BottomBar({ panelOpen, setPanelOpen }) {
+  const { language } = useLanguage();
   const tab = ({ isActive }) => `flex flex-1 flex-col items-center gap-0.5 py-2 text-[12px] font-semibold ${isActive && !panelOpen ? "text-nisr-blue" : "text-nisr-muted"}`;
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t border-nisr-line bg-white pb-[env(safe-area-inset-bottom)] lg:hidden" aria-label="Main">
-      <NavLink to="/" end className={tab} onClick={() => setPanelOpen(false)}><Home size={22} /> Home</NavLink>
-      <NavLink to="/?ask=1" className={() => tab({ isActive: false })} onClick={() => setPanelOpen(false)}><MessageCircle size={22} /> Ask</NavLink>
-      <NavLink to="/my-farm" className={tab} onClick={() => setPanelOpen(false)}><Wheat size={22} /> My harvest</NavLink>
+      <NavLink to="/" end className={tab} onClick={() => setPanelOpen(false)}><Home size={22} /> {language === "rw" ? "Ahabanza" : "Home"}</NavLink>
+      <NavLink to="/?ask=1" className={() => tab({ isActive: false })} onClick={() => setPanelOpen(false)}><MessageCircle size={22} /> {language === "rw" ? "Baza" : "Ask"}</NavLink>
+      <NavLink to="/my-farm" className={tab} onClick={() => setPanelOpen(false)}><Wheat size={22} /> {language === "rw" ? "Umusaruro" : "My harvest"}</NavLink>
       <button data-info-toggle className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[12px] font-semibold ${panelOpen ? "text-nisr-blue" : "text-nisr-muted"}`} onClick={() => setPanelOpen(!panelOpen)}>
         <Compass size={22} /> Information
       </button>
@@ -165,6 +172,7 @@ export default function Layout() {
       <main className="flex-1 pb-16 lg:pb-0"><Outlet /></main>
       <Footer />
       <BottomBar panelOpen={panelOpen} setPanelOpen={setPanelOpen} />
+      <AssistantWidget />
     </div>
   );
 }

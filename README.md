@@ -1,72 +1,63 @@
-# Rwanda Agricultural Intelligence Platform
+﻿# AgriLens Rwanda
 
-NISR Big Data Hackathon 2026 · Track 1: Agricultural Productivity
+A farmer-focused agriculture dashboard for exploring crop productivity across Rwanda’s 30 districts. The React application compares observed survey results with input scenarios and offers practical, survey-grounded guidance.
 
-A decision-support platform built on the NISR **Agricultural Household Survey (AHS) 2024**
-that helps farmers and agricultural planners act on productivity, irrigation, soil and fertility
-management, post-harvest handling and market opportunities.
+## What the dashboard communicates
+
+AgriLens presents district and crop productivity summaries from Rwanda’s Agricultural Household Survey (AHS) 2024. Its maps compare observed district yield with available survey input scenarios, while district details summarize yields and relevant farm conditions. The application is exploratory decision support: survey associations do not prove that a practice caused a yield change, and scenario values are not guaranteed forecasts.
+
+There is no connected live weather or rainfall feed in this release. Any weather-related advice is general; the dashboard does not display a verified next-season rainfall forecast.
 
 ## Data
 
-The source is the AHS 2024 microdata from the [NISR Microdata Portal](https://microdata.statistics.gov.rw).
-NISR microdata may not be redistributed, so **raw and household/plot-level files are not in
-this repository**. To rebuild:
+- **Source:** AHS 2024 agricultural household survey microdata, obtained from the [NISR Microdata Portal](https://microdata.statistics.gov.rw/).
+- **Local source files:** `HarvestGap_Rwanda/data/Microdata/` (Stata `.dta` survey modules). These source files are not intended for redistribution; check the NISR access terms before sharing them.
+- **Dashboard data:** `HarvestGap_Rwanda/web/public/data/agrilens.json`, containing the district boundaries and aggregated data consumed by the React app.
+- **Generated outputs:** cleaned tables, reports, and model artifacts are under `HarvestGap_Rwanda/data/processed/`, `HarvestGap_Rwanda/data/public/`, `HarvestGap_Rwanda/reports/`, and `HarvestGap_Rwanda/models/` after running the pipeline.
 
-1. Download the AHS 2024 Stata (`.dta`) files and place them in `data/raw/`
-   (or point `AHS_RAW_DIR` at their folder).
-2. Run the pipeline:
+The cleaning workflow normalizes blank strings and non-finite values and flags duplicates for review without silently deleting them. It does not fill unanswered survey responses with invented values. Model pipelines impute missing predictor values using statistics learned from their training rows. Check the questionnaire and data dictionary to confirm units and category codes before interpreting results.
 
-```bash
-python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/python pipeline.py
+## How to use the application
+
+On the home dashboard, choose a district and crop or select a district on either map. The two maps show observed productivity and the available input scenario side by side. District rotation can be paused, and hovering over the map pauses the rotation. Open a district report to inspect its summarized data. Farmers can also use the harvest estimate and AgriLens AI assistant for follow-up questions; the assistant provides local, rule-based guidance rather than a live expert or hosted AI service. The language control switches supported interface content between English and Kinyarwanda.
+
+## Run locally
+
+Requirements: Node.js 18+ for the web application. Python 3.10–3.12 is needed only to rebuild the data workflow and model artifacts. From the repository root:
+
+```powershell
+cd HarvestGap_Rwanda/web
+npm install
+npm run dev
 ```
 
-### Outputs
+Vite serves the app locally (normally at `http://localhost:5173`). The dashboard data is already bundled in `web/public/data/agrilens.json`; starting the web app does not require a database or Python process.
 
-| File | Level | Published | Contents |
-|---|---|---|---|
-| `data/processed/plot_crops.parquet` | crop × plot × season | no | Yield, seed, fertilizer, irrigation, soil conservation, tenure + household features |
-| `data/processed/households.parquet` | household | no | Head characteristics, poverty, extension, cooperatives, finance |
-| `data/processed/fruits.parquet`, `milk.parquet` | household | no | Production and commercialisation |
-| `data/public/district_indicators.csv` | district | yes | Irrigation gaps, input adoption, soil threats, extension, poverty |
-| `data/public/crop_yields_national.csv` | crop | yes | Weighted yield distribution and input adoption |
-| `data/public/crop_yields_district.csv` | district × crop | yes | Same, by district |
-| `data/public/fruit_market.csv` | fruit | yes | Production, sold share, prices |
-| `data/public/milk_market.csv` | province | yes | Milk sold share and prices |
+To rebuild the data and model workflow on Windows, install the packages once and run the project script from `HarvestGap_Rwanda`:
 
-All published estimates use the AHS survey weights and suppress groups with fewer than 30
-observations.
-
-### Method notes
-
-- **Yield** = harvest (kg) ÷ (plot area × crop's share of the plot). Rows with crop area below
-  10 m² or a log-yield beyond 3×IQR of that crop are flagged `yield_valid = False`.
-- **Fertilizer rate** is per plot (shared by intercropped crops) and capped at 1,000 kg/ha.
-- AHS is observational. Relationships between practices and yield are **associations**, not
-  proven causal effects, and the platform words its recommendations accordingly.
-- Kigali's urban districts have few farming households and are flagged `low_sample`.
-
-## AI use disclosure
-
-AI assistants (Claude) were used to help write the data pipeline code and documentation.
-The team reviewed, ran and validated all outputs and is responsible for the submission.
-
-## Yield model
-
-```bash
-.venv/bin/python analysis/yield_model.py
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\python -m pip install -r requirements.txt
+.\run_pipeline.ps1
 ```
 
-Fits two models on the crop × plot table and writes `reports/yield_model.md`:
+The pipeline audits and cleans the supplied microdata, builds crop features, trains available models, and exports dashboard data. It expects the source survey files in `data/Microdata/` (or `data/raw/`). Do not commit restricted raw survey records. Python model artifacts are used by the analysis workflow; the browser dashboard uses the exported JSON.
 
-- **Practice associations**: one regression per crop (district and season fixed effects, errors
-  clustered by survey cluster) estimating how much higher yields are on plots using each practice →
-  `data/public/practice_associations.csv`.
-- **Yield predictor**: gradient-boosted trees for 20 major crops, validated with cluster-grouped
-  cross-validation against a crop × district median benchmark → `models/yield_model.joblib`,
-  `data/public/model_metrics.json`, `model_metrics_by_crop.csv`, `feature_importance.csv`.
-- **Scenarios and gaps**: model-estimated yield if non-users adopted improved seed and fertilizer
-  (`input_scenario_district.csv`) and each district's gap to the national 75th-percentile yield
-  (`district_yield_gaps.csv`).
+For a production build, run `npm run build` from `HarvestGap_Rwanda/web`. `HarvestGap_Rwanda/web/vercel.json` contains the Vercel routing configuration.
 
-Every leaf of the saved model summarises at least 50 plots, so it holds no individual household's answers.
+## Repository contents and submission checklist
+
+The project source and data assets are organized as follows:
+
+1. **README:** this file, at the repository root, explains the data, dashboard, limitations, and user interactions.
+2. **Project scripts:** `HarvestGap_Rwanda/analysis/`, `HarvestGap_Rwanda/src/`, `HarvestGap_Rwanda/run_pipeline.ps1`, and `HarvestGap_Rwanda/web/` contain the data workflow, prediction utilities, and application source.
+3. **Demonstration video:** add a screen recording (WebM or GIF, at most 3 minutes) showing the interface and its functionality. No demo video is currently present.
+4. **Data:** aggregated application data is in `HarvestGap_Rwanda/web/public/data/agrilens.json`. The original AHS data is available through the NISR Microdata Portal and is kept local because access/redistribution terms apply; the pipeline can regenerate derived outputs when authorized source files are available.
+5. **Eligibility documents:** add the official student cards or other eligibility documents for both team members in the submission repository, only where permitted. These documents are not currently present.
+
+## Important limitations
+
+- AHS data are observational; recommendations and observed relationships are not causal claims.
+- Scenario values reflect supplied survey input scenarios, not a guaranteed next-season prediction.
+- This release has no live weather, rainfall, soil-test, or market-price integration.
+- Validate crop names, district codes, yield calculations, and agronomic advice with official documentation and local extension experts before operational use.

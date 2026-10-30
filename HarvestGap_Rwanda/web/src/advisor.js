@@ -38,11 +38,11 @@ const FRUIT_WORDS = ["avocado", "mango", "papaya", "guava", "orange", "lemon", "
 const TOPIC_WORDS = [
   ["invest", ["invest", "priorit", "which district", "where should", "government", "policy", "planner", "budget", "most need"]],
   ["export", ["export", "abroad", "foreign", "international"]],
-  ["water", ["water", "irrigat", "dry", "drought", "rain", "pump", "amazi"]],
-  ["soil", ["soil", "fertiliz", "fertilis", "manure", "compost", "npk", "dap", "urea", "erosion", "terrace", "ifumbire"]],
-  ["store", ["store", "storage", "sell", "sold", "market", "price", "buyer", "spoil", "rot", "lose", "loss", "process", "dry my", "after harvest", "post-harvest", "value"]],
+  ["water", ["water", "irrigat", "dry", "drought", "rain", "pump", "amazi", "kuhira"]],
+  ["soil", ["soil", "fertiliz", "fertilis", "manure", "compost", "npk", "dap", "urea", "erosion", "terrace", "ifumbire", "ubutaka"]],
+  ["store", ["store", "storage", "sell", "sold", "market", "price", "buyer", "spoil", "rot", "lose", "loss", "process", "dry my", "after harvest", "post-harvest", "value", "kubika", "kugurisha"]],
   ["compare", ["compare", "versus", " vs ", "better than", "best district", "highest", "lowest"]],
-  ["harvest", ["harvest", "yield", "grow more", "produce", "production", "increase", "how much", "improve", "more"]],
+  ["harvest", ["harvest", "yield", "grow more", "produce", "production", "increase", "how much", "improve", "more", "umusaruro", "gusarura"]],
 ];
 
 const has = (q, word) => new RegExp(`(^|[^a-z])${word.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`).test(q);
@@ -283,11 +283,45 @@ export function answer(text, D, farm = {}) {
     return harvestAnswer(D, d, c);
   }
   if (topic === "district") return districtAnswer(D, district);
+  const q = text.toLowerCase();
+  if (/pest|insect|worm|disease|blight|fungus|aphid|udukoko|indwara/.test(q)) return {
+    area: "soil", title: "Check crop pests and disease", facts: [],
+    paragraphs: [
+      "Inspect the whole field regularly, including the underside of leaves, and note which plants and parts are affected. Remove badly affected plants when practical and keep tools clean.",
+      "Identify the pest or disease before treating it. Ask a local extension officer or agronomist to confirm the cause; use only a registered product labelled for that crop and follow its label and protective equipment directions. Do not mix products or guess a dose.",
+    ],
+    followUps: [crop ? `Harvest for ${crop}${district ? ` in ${district}` : ""}` : "How can I improve my harvest?", "Soil and fertilizer advice", "Water for my crops"],
+  };
+  if (/seed|spacing|planting|plant date|sow|germinat|imbuto|gutera/.test(q)) return {
+    area: "harvest", title: "Seed and planting guidance", facts: [],
+    paragraphs: [
+      "Choose certified seed of a variety suited to your district and intended use. Check the package for germination, spacing, depth and storage instructions; local extension staff can help adapt these to your field.",
+      "Prepare a well-drained seedbed, plant when local conditions are suitable, and check emergence early so gaps can be replanted. Rotate crops where practical and keep the field weeded while young plants establish.",
+      "The survey can show typical yields by crop and district, but it does not provide a live planting calendar or weather forecast.",
+    ],
+    followUps: [crop && district ? `${crop} harvest in ${district}` : "Which crop should I plant?", "Water for crops", "Improve my soil"],
+  };
+  if (/weather|rainfall|rain forecast|climate|imvura/.test(q)) return {
+    area: "water", title: "Weather and seasonal planning", facts: [],
+    paragraphs: [
+      "AgriLens does not receive a live rainfall forecast. Check the latest official forecast and local extension advice before choosing planting dates or irrigation plans.",
+      "As general preparation, maintain drainage, conserve soil moisture with mulch, store rainwater where safe and feasible, and avoid relying on a survey scenario as a weather prediction.",
+    ],
+    followUps: [district ? `Water for crops in ${district}` : "Which districts lack water most?", "How can I improve my harvest?"],
+  };
+  if (/cattle|cow|goat|sheep|poultry|chicken|livestock|animal|inkoko|inka|ihene|amatungo/.test(q)) return {
+    area: "harvest", title: "Livestock care guidance", facts: [],
+    paragraphs: [
+      "Provide clean water, suitable feed, shade or shelter, and keep housing clean and well ventilated. Store feed in a dry place and introduce feed changes gradually.",
+      "Follow the vaccination and parasite-control schedule recommended by a local veterinary officer. Separate sick animals where safe and seek veterinary help early; this assistant cannot diagnose disease or prescribe medicines.",
+    ],
+    followUps: ["How can I store animal feed?", "Where can I get agricultural advice?"],
+  };
   return {
     unknown: true,
-    title: "I couldn't match that to the survey data",
-    paragraphs: ["I can answer questions about **harvests, water, soil and fertilizer, storage and selling, and export crops**, for any of Rwanda's 30 districts. Try one of these:"],
-    followUps: ["How can I grow more maize in Musanze?", "Water for crops in Kayonza", "Where to invest first?"],
+    title: "Agriculture question",
+    paragraphs: ["I can help with crop planning, pests and disease, seed and planting, harvest productivity, water, soil and fertilizer, storage and sales, and Rwanda district comparisons. For advice specific to your field, include your crop and district. For urgent crop disease or pesticide choices, confirm the diagnosis with a local extension officer."],
+    followUps: ["I want to plant beans", "How can I grow more maize in Musanze?", "How do I manage crop pests?"],
   };
 }
 
@@ -297,6 +331,7 @@ export function completeQuestion(pending, value) {
 }
 
 export const SUGGESTIONS = [
+  "I want to plant beans",
   "How can I grow more maize in Musanze?",
   "Which districts lack water most?",
   "Is fertilizer worth it for Irish potato?",
