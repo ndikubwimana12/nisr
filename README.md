@@ -1,12 +1,10 @@
 # AgriLens Rwanda
 
-A farmer-focused agriculture dashboard for exploring crop productivity across Rwanda’s 30 districts. The React application compares observed survey results with input scenarios and offers practical, survey-grounded guidance.
+A farmer-focused agriculture dashboard for exploring crop productivity across Rwanda’s 30 districts. The React application compares observed survey results with input scenarios and offers practical, survey-grounded guidance and provide productivit prediction for next season.
 
-## What the dashboard communicates
+## What the application communicates
 
-AgriLens presents district and crop productivity summaries from Rwanda’s Agricultural Household Survey (AHS) 2024. Its maps compare observed district yield with available survey input scenarios, while district details summarize yields and relevant farm conditions. The application is exploratory decision support: survey associations do not prove that a practice caused a yield change, and scenario values are not guaranteed forecasts.
-
-There is no connected live weather or rainfall feed in this release. Any weather-related advice is general; the dashboard does not display a verified next-season rainfall forecast.
+AgriLens presents district and crop productivity summaries from Rwanda’s Agricultural Household Survey (AHS) 2024. Its maps compare observed district yield with available survey input scenarios, while district details summarize yields and relevant farm conditions. it shows the current productivity for 30 districts and shows the prediction for future seasons. 
 
 ## Data
 
@@ -49,7 +47,6 @@ For a production build, run `npm run build` from `HarvestGap_Rwanda/web`. `Harve
 
 The project source and data assets are organized as follows:
 
-1. **README:** this file, at the repository root, explains the data, dashboard, limitations, and user interactions.
 2. **Project scripts:** `HarvestGap_Rwanda/analysis/`, `HarvestGap_Rwanda/src/`, `HarvestGap_Rwanda/run_pipeline.ps1`, and `HarvestGap_Rwanda/web/` contain the data workflow, prediction utilities, and application source.
 3. **Demonstration video:** add a screen recording (WebM or GIF, at most 3 minutes) showing the interface and its functionality. No demo video is currently present.
 4. **Data:** aggregated application data is in `HarvestGap_Rwanda/web/public/data/agrilens.json`. The original AHS data is available through the NISR Microdata Portal and is kept local because access/redistribution terms apply; the pipeline can regenerate derived outputs when authorized source files are available.
