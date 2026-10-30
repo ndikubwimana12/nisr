@@ -49,15 +49,10 @@ For a production build, run `npm run build` from `HarvestGap_Rwanda/web`. `Harve
 
 The project source and data assets are organized as follows:
 
-1. **README:** this file, at the repository root, explains the data, dashboard, limitations, and user interactions.
-2. **Project scripts:** `HarvestGap_Rwanda/analysis/`, `HarvestGap_Rwanda/src/`, `HarvestGap_Rwanda/run_pipeline.ps1`, and `HarvestGap_Rwanda/web/` contain the data workflow, prediction utilities, and application source.
-3. **Demonstration video:** add a screen recording (WebM or GIF, at most 3 minutes) showing the interface and its functionality. No demo video is currently present.
-4. **Data:** aggregated application data is in `HarvestGap_Rwanda/web/public/data/agrilens.json`. The original AHS data is available through the NISR Microdata Portal and is kept local because access/redistribution terms apply; the pipeline can regenerate derived outputs when authorized source files are available.
-5. **Eligibility documents:** add the official student cards or other eligibility documents for both team members in the submission repository, only where permitted. These documents are not currently present.
+ **Project scripts:** `HarvestGap_Rwanda/analysis/`, `HarvestGap_Rwanda/src/`, `HarvestGap_Rwanda/run_pipeline.ps1`, and `HarvestGap_Rwanda/web/` contain the data workflow, prediction utilities, and application source.
+ ##Demo video: this video shows how AgriLens works
+  https://drive.google.com/file/d/1CWVvEgbLkQdAhwSHPf1iCyZ___MLqJaM/view?usp=sharing
+  
+   **Data:** aggregated application data is in `HarvestGap_Rwanda/web/public/data/agrilens.json`. The original AHS data is available through the NISR Microdata Portal and is kept local because access/redistribution terms apply; the pipeline can regenerate derived outputs when authorized source files are available.
+ **Eligibility documents:** add the official student cards or other eligibility documents for both team members in the submission repository, only where permitted. These documents are not currently present.
 
-## Important limitations
-
-- AHS data are observational; recommendations and observed relationships are not causal claims.
-- Scenario values reflect supplied survey input scenarios, not a guaranteed next-season prediction.
-- This release has no live weather, rainfall, soil-test, or market-price integration.
-- Validate crop names, district codes, yield calculations, and agronomic advice with official documentation and local extension experts before operational use.
